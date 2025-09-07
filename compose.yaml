@@ -1,0 +1,21 @@
+services:
+  pgvector:
+    image: 'pgvector/pgvector:pg16'
+    container_name: codereview-pg
+    environment:
+      - 'POSTGRES_DB=codereview'
+      - 'POSTGRES_PASSWORD=codereview'
+      - 'POSTGRES_USER=codereview'
+    labels:
+      - "org.springframework.boot.service-connection=postgres"
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U codereviewer -d codereviewer" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

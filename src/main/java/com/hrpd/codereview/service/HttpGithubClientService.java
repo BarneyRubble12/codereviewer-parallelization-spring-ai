@@ -1,0 +1,53 @@
+package com.hrpd.codereview.service;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * GitHub REST client using Java 21 HttpClient.
+ */
+public class HttpGithubClientService implements GithubClientService {
+
+    private final HttpClient http = HttpClient.newHttpClient();
+    private final String baseApi;
+    private final String token;
+
+    public HttpGithubClientService(String baseApi, String token) {
+        this.baseApi = baseApi.endsWith("/") ? baseApi.substring(0, baseApi.length() - 1) : baseApi;
+        this.token = token == null ? "" : token.trim();
+    }
+
+    @Override
+    public String fetchPrPatch(String repo, int prNumber) throws IOException, InterruptedException {
+        return fetchWithAccept(repo, prNumber, "application/vnd.github.v3.patch");
+    }
+
+    @Override
+    public String fetchPrDiff(String repo, int prNumber) throws IOException, InterruptedException {
+        return fetchWithAccept(repo, prNumber, "application/vnd.github.v3.diff");
+    }
+
+    private String fetchWithAccept(String repo, int prNumber, String accept) throws IOException, InterruptedException {
+        if (repo == null || !repo.contains("/")) {
+            throw new IllegalArgumentException("repo must be 'owner/name', got: " + repo);
+        }
+        URI uri = URI.create(baseApi + "/repos/" + repo + "/pulls/" + prNumber);
+
+        HttpRequest.Builder req = HttpRequest.newBuilder(uri)
+                .GET()
+                .header("Accept", accept)
+                .header("User-Agent", "pr-code-reviewer");
+
+        if (!token.isBlank()) req.header("Authorization", "token " + token);
+
+        HttpResponse<String> resp = http.send(req.build(),
+                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        if (resp.statusCode() == 200) return resp.body();
+        throw new IOException("GitHub API " + resp.statusCode() + " for " + uri + "\n" + resp.body());
+    }
+}
