@@ -25,14 +25,14 @@ This application showcases how to implement parallel processing in Spring Boot a
 │   Controller    │───▶│  Workflow        │───▶│                 │
 │                 │    │  Service         │    │ • Security      │
 └─────────────────┘    └──────────────────┘    │ • Performance   │
-         │                       │              │ • Clean Code    │
-         ▼                       ▼              └─────────────────┘
+         │                       │             │ • Clean Code    │
+         ▼                       ▼             └─────────────────┘
 ┌─────────────────┐    ┌──────────────────┐              │
 │   Diff Service  │    │   Aggregator     │              ▼
 │                 │    │   Service        │    ┌─────────────────┐
 └─────────────────┘    └──────────────────┘    │  Vector Store   │
-         │                       │              │  (pgvector)     │
-         ▼                       ▼              └─────────────────┘
+         │                       │             │  (pgvector)     │
+         ▼                       ▼             └─────────────────┘
 ┌─────────────────┐    ┌──────────────────┐
 │  GitHub Client  │    │   Standards      │
 │                 │    │   Retriever      │
