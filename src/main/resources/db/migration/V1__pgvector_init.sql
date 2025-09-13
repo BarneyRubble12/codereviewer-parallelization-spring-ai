@@ -1,5 +1,6 @@
 -- Requires superuser or a role with CREATE on database
 CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Drop existing table if it exists (to fix schema mismatch)
 DROP TABLE IF EXISTS ai_documents;

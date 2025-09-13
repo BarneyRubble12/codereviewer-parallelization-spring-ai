@@ -3,9 +3,9 @@ services:
     image: 'pgvector/pgvector:pg16'
     container_name: codereview-pg
     environment:
-      - 'POSTGRES_DB=codereview'
-      - 'POSTGRES_PASSWORD=codereview'
-      - 'POSTGRES_USER=codereview'
+      - 'POSTGRES_DB=codereviewer'
+      - 'POSTGRES_PASSWORD=codereviewer'
+      - 'POSTGRES_USER=codereviewer'
     labels:
       - "org.springframework.boot.service-connection=postgres"
     ports: ["5432:5432"]

@@ -15,7 +15,9 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class HttpGithubClientService implements GithubClientService {
 
-    private final HttpClient http = HttpClient.newHttpClient();
+    private final HttpClient http = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build();
     private final String baseApi;
     private final String token;
 
@@ -67,6 +69,15 @@ public class HttpGithubClientService implements GithubClientService {
             log.info("✅ Successfully fetched PR data from GitHub");
             return resp.body();
         }
+        
+        // Handle redirects
+        if (resp.statusCode() == 301 || resp.statusCode() == 302) {
+            String location = resp.headers().firstValue("Location").orElse(null);
+            log.warn("🔄 GitHub API redirect {} to: {}", resp.statusCode(), location);
+            throw new IOException("GitHub API redirect " + resp.statusCode() + " to " + location + 
+                    ". Please check the repository URL format: " + repo);
+        }
+        
         log.error("❌ GitHub API error: {} - {}", resp.statusCode(), resp.body());
         throw new IOException("GitHub API " + resp.statusCode() + " for " + uri + "\n" + resp.body());
     }

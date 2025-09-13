@@ -14,6 +14,7 @@ This application showcases how to implement parallel processing in Spring Boot a
 - **🔍 Standards-Based**: Uses vector search to ground AI reviews with internal standards
 - **🌐 GitHub Integration**: Can review pull requests directly from GitHub
 - **📈 Comprehensive Logging**: Detailed logging with emojis for demo visibility
+- **🔄 Smart Document Ingestion**: Prevents duplicate document ingestion with content hashing
 
 ## 🏗️ Architecture
 
@@ -196,6 +197,89 @@ curl -X POST http://localhost:8081/review/pr \
 - **Focus**: Code quality, maintainability, readability
 - **Standards**: Clean code principles, SOLID principles
 - **Examples**: Code duplication, complex methods, poor naming
+
+## 🔄 Smart Document Ingestion
+
+The application includes intelligent document ingestion that prevents duplicate documents from being stored in the vector database.
+
+### How It Works
+
+1. **Content Hashing**: Each document chunk is hashed using SHA-256 based on content + source filename
+2. **Duplicate Detection**: Before ingestion, the system checks existing content hashes in the database
+3. **Selective Ingestion**: Only new or changed documents are ingested, skipping duplicates
+4. **Change Tracking**: The system tracks content changes and updates only when necessary
+
+### Database Schema
+
+The `ai_documents` table includes a `content_hash` column for efficient duplicate detection:
+
+```sql
+ALTER TABLE ai_documents ADD COLUMN content_hash VARCHAR(64);
+CREATE INDEX ai_documents_content_hash_idx ON ai_documents(content_hash);
+```
+
+### Admin Endpoints
+
+- **POST `/review/admin/reingest`**: Force complete re-ingestion of all standards documents
+  - Useful for development or when standards files have been updated
+  - Clears all existing documents and re-ingests everything
+
+### Testing Duplicate Prevention
+
+Run the test script to verify the functionality:
+
+```bash
+./test-duplicate-prevention.sh
+```
+
+This script will:
+1. Check if the application is running
+2. Test the manual re-ingestion endpoint
+3. Verify duplicate prevention behavior
+
+### Fixing Existing Data
+
+If you have existing documents with null `content_hash` values, you can fix them by:
+
+1. **Automatic Fix**: Restart the application - Flyway will run the V3 migration
+2. **Manual Fix**: Run the SQL script directly:
+   ```bash
+   psql -h localhost -U codereviewer -d codereviewer -f fix-content-hash.sql
+   ```
+3. **Test the Fix**: Run the test script:
+   ```bash
+   ./test-content-hash-fix.sh
+   ```
+
+### Troubleshooting Migration Issues
+
+If you encounter migration errors related to the `digest` function:
+
+1. **Reset Database**: Use the reset script to start fresh:
+   ```bash
+   ./reset-database.sh
+   ```
+   This will:
+   - Stop the application and database
+   - Remove the database volume
+   - Start fresh with proper extensions (pgcrypto)
+   - Run all migrations automatically
+
+2. **Manual Database Reset**: If the script doesn't work:
+   ```bash
+   docker-compose down -v
+   docker volume rm codereviewer-parallelization-spring-ai_pgdata
+   docker-compose up -d
+   mvn spring-boot:run
+   ```
+
+### Log Messages
+
+Watch for these log messages to understand the ingestion behavior:
+
+- `Found X existing document chunks in database` - Shows how many documents already exist
+- `Ingested X new document chunks from Y files (skipped Z duplicates)` - Shows ingestion results
+- `No new documents to ingest (all X chunks already exist)` - All documents are up-to-date
 
 ## 📊 Monitoring and Logging
 

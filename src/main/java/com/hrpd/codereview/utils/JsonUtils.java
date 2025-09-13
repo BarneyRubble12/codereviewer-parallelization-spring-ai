@@ -17,9 +17,25 @@ public class JsonUtils {
 
     public static List<Finding> parseFindings(String json, ReviewerType type) {
         try {
-            JsonNode root = MAPPER.readTree(json);
+            // Clean the JSON string by removing markdown code blocks
+            String cleanedJson = json.trim();
+            if (cleanedJson.startsWith("```json")) {
+                cleanedJson = cleanedJson.substring(7);
+            }
+            if (cleanedJson.startsWith("```")) {
+                cleanedJson = cleanedJson.substring(3);
+            }
+            if (cleanedJson.endsWith("```")) {
+                cleanedJson = cleanedJson.substring(0, cleanedJson.length() - 3);
+            }
+            cleanedJson = cleanedJson.trim();
+            
+            JsonNode root = MAPPER.readTree(cleanedJson);
             JsonNode arr = root.path("findings");
-            if (!arr.isArray()) return List.of();
+            if (!arr.isArray()) {
+                System.err.println("No findings array found in JSON: " + cleanedJson);
+                return List.of();
+            }
 
             List<Finding> out = new ArrayList<>();
             for (JsonNode n : arr) {
@@ -44,6 +60,9 @@ public class JsonUtils {
             }
             return out;
         } catch (Exception e) {
+            System.err.println("Failed to parse JSON: " + json);
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
             return List.of();
         }
     }

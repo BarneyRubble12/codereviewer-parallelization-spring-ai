@@ -39,17 +39,31 @@ public class PerformanceReviewer implements Reviewer {
             var h = hunks.get(i);
             log.debug("🔍 Analyzing performance hunk {}/{}: {}", i + 1, hunks.size(), h.filePath());
             String prompt = """
-        You are a senior Java PERFORMANCE reviewer.
-        INTERNAL STANDARDS:
-        %s
-
-        Return JSON with findings as specified earlier.
-        Focus on hot paths, allocations, I/O, SQL patterns, pagination, caching.
-
+        You are a senior Java PERFORMANCE reviewer. Look for performance issues.
+        
+        Analyze this code diff and return EXACTLY this JSON format:
+        
+        {"findings":[
+           {"title":"Issue Title","rationale":"Why this is a problem","suggestion":"How to fix it",
+            "severity":"HIGH","filePath":"","lineStart":1,"lineEnd":1}
+         ],
+         "summary":"Brief summary"}
+        
+        Look specifically for:
+        1. Memory leaks and inefficient allocations
+        2. N+1 database queries
+        3. Missing connection pooling
+        4. Inefficient loops or algorithms
+        5. Large object creation in hot paths
+        6. Missing caching opportunities
+        
+        IMPORTANT: If you find performance issues, return them in the findings array. If no issues, return empty findings array.
+        
+        Code to analyze:
         ```diff
         %s
         ```
-        """.formatted(grounding, h.patch());
+        """.formatted(h.patch());
 
             log.debug("🤖 Calling AI model for performance analysis...");
             String json = chat.prompt().user(prompt).call().content();

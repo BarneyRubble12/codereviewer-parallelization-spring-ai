@@ -36,8 +36,8 @@ public class AppConfig {
     }
 
     @Bean
-    public StandardsIngestorService standardsIngestor(VectorStore vectorStore) {
-        return new StandardsIngestorServiceImpl(vectorStore);
+    public StandardsIngestorService standardsIngestor(VectorStore vectorStore, org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
+        return new StandardsIngestorServiceImpl(vectorStore, jdbcTemplate);
     }
 
     /** Runs standards ingestion at startup. */

@@ -42,11 +42,32 @@ public class CleanCodeReviewer implements Reviewer {
             var h = hunks.get(i);
             log.debug("🔍 Analyzing clean code hunk {}/{}: {}", i + 1, hunks.size(), h.filePath());
             String prompt = """
-        You are a senior Java CLEAN CODE reviewer.
+        You are a senior Java CLEAN CODE reviewer. Your job is to identify code quality issues and violations.
         INTERNAL STANDARDS:
         %s
 
-        Return JSON with findings; focus on readability, cohesion, exceptions, logging, duplication.
+        CRITICAL: Look for these specific clean code issues:
+        - Poor variable naming (single letters like x, y, z or abbreviations like cnt, lst, str)
+        - Deep nesting (more than 3 levels of if/for/while statements)
+        - Long methods (more than 20 lines)
+        - Code duplication (repeated logic patterns)
+        - Generic exception handling (catch(Exception e))
+        - Missing input validation (null checks, parameter validation)
+        - Unused methods or dead code
+        - Complex conditional statements that should be extracted
+
+        Return JSON with findings:
+        {"findings":[
+           {"title":"","rationale":"","suggestion":"",
+            "severity":"BLOCKER|HIGH|MEDIUM|LOW|INFO",
+            "filePath":"","lineStart":0,"lineEnd":0}
+         ],
+         "summary":""}
+
+        - Be thorough and identify ALL code quality issues
+        - Cite relevant internal standards in rationale when applicable
+        - Use HIGH severity for major code quality violations
+        - If no issues found, return empty findings array
 
         ```diff
         %s
