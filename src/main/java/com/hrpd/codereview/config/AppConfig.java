@@ -1,6 +1,5 @@
 package com.hrpd.codereview.config;
 
-import com.hrpd.codereview.controller.ReviewController;
 import com.hrpd.codereview.reviewer.CleanCodeReviewer;
 import com.hrpd.codereview.reviewer.PerformanceReviewer;
 import com.hrpd.codereview.reviewer.Reviewer;
@@ -44,7 +43,7 @@ public class AppConfig {
     /** Runs standards ingestion at startup. */
     @Bean
     public CommandLineRunner ingestStandardsAtStartup(StandardsIngestorService ingestor) {
-        return args -> ingestor.ingestFromClasspath();
+        return _ -> ingestor.ingestFromClasspath();
     }
 
     @Bean
