@@ -42,6 +42,8 @@ public class SecurityReviewer implements Reviewer {
             String prompt = """
             You are a security expert reviewing Java code. Look for security vulnerabilities.
             
+            IMPORTANT: Return ONLY valid JSON. Do not include any explanatory text before or after the JSON.
+            
             Analyze this code diff and return EXACTLY this JSON format:
             
             {"findings":[
@@ -56,7 +58,10 @@ public class SecurityReviewer implements Reviewer {
             3. Logging sensitive information
             4. Missing authentication
             
-            IMPORTANT: If you find security issues, return them in the findings array. If no issues, return empty findings array.
+            IMPORTANT: 
+            - If you find security issues, return them in the findings array
+            - If no issues, return empty findings array
+            - Return ONLY the JSON object, no other text
             
             Code to analyze:
             ```diff
@@ -67,7 +72,7 @@ public class SecurityReviewer implements Reviewer {
             log.debug("🤖 Calling AI model for security analysis...");
             String json = chat.prompt().user(prompt).call().content();
             log.info("🔍 RAW AI RESPONSE: {}", json);
-            var hunkFindings = JsonUtils.parseFindings(json, ReviewerType.SECURITY);
+            var hunkFindings = JsonUtils.parseFindings(json, ReviewerType.SECURITY, h.filePath());
             log.info("🔍 PARSED FINDINGS: {}", hunkFindings.size());
             findings.addAll(hunkFindings);
             log.debug("✅ Security analysis complete for hunk {}/{}: {} findings", 

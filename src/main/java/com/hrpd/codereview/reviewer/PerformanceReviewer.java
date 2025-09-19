@@ -41,6 +41,8 @@ public class PerformanceReviewer implements Reviewer {
             String prompt = """
         You are a senior Java PERFORMANCE reviewer. Look for performance issues.
         
+        IMPORTANT: Return ONLY valid JSON. Do not include any explanatory text before or after the JSON.
+        
         Analyze this code diff and return EXACTLY this JSON format:
         
         {"findings":[
@@ -57,7 +59,10 @@ public class PerformanceReviewer implements Reviewer {
         5. Large object creation in hot paths
         6. Missing caching opportunities
         
-        IMPORTANT: If you find performance issues, return them in the findings array. If no issues, return empty findings array.
+        IMPORTANT: 
+        - If you find performance issues, return them in the findings array
+        - If no issues, return empty findings array
+        - Return ONLY the JSON object, no other text
         
         Code to analyze:
         ```diff
@@ -67,7 +72,7 @@ public class PerformanceReviewer implements Reviewer {
 
             log.debug("🤖 Calling AI model for performance analysis...");
             String json = chat.prompt().user(prompt).call().content();
-            var hunkFindings = JsonUtils.parseFindings(json, ReviewerType.PERFORMANCE);
+            var hunkFindings = JsonUtils.parseFindings(json, ReviewerType.PERFORMANCE, h.filePath());
             findings.addAll(hunkFindings);
             log.debug("✅ Performance analysis complete for hunk {}/{}: {} findings", 
                     i + 1, hunks.size(), hunkFindings.size());

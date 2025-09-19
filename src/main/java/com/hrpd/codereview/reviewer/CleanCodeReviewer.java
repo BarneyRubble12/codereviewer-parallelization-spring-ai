@@ -56,6 +56,8 @@ public class CleanCodeReviewer implements Reviewer {
         - Unused methods or dead code
         - Complex conditional statements that should be extracted
 
+        IMPORTANT: Return ONLY valid JSON. Do not include any explanatory text before or after the JSON.
+
         Return JSON with findings:
         {"findings":[
            {"title":"","rationale":"","suggestion":"",
@@ -68,6 +70,7 @@ public class CleanCodeReviewer implements Reviewer {
         - Cite relevant internal standards in rationale when applicable
         - Use HIGH severity for major code quality violations
         - If no issues found, return empty findings array
+        - Return ONLY the JSON object, no other text
 
         ```diff
         %s
@@ -76,7 +79,7 @@ public class CleanCodeReviewer implements Reviewer {
 
             log.debug("🤖 Calling AI model for clean code analysis...");
             String json = chat.prompt().user(prompt).call().content();
-            var hunkFindings = JsonUtils.parseFindings(json, ReviewerType.CLEAN_CODE);
+            var hunkFindings = JsonUtils.parseFindings(json, ReviewerType.CLEAN_CODE, h.filePath());
             findings.addAll(hunkFindings);
             log.debug("✅ Clean code analysis complete for hunk {}/{}: {} findings", 
                     i + 1, hunks.size(), hunkFindings.size());
