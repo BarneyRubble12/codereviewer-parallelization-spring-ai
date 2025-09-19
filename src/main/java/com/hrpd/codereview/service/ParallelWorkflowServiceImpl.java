@@ -68,12 +68,12 @@ public class ParallelWorkflowServiceImpl implements ParallelWorkflowService {
 
         log.info("⏳ Waiting for all {} parallel reviewers to complete...", futures.size());
         var parts = futures.stream()
-                .map(f -> f.handle((res, ex) -> {
+                .map(f -> f.handle((reviewResult, ex) -> {
                     if (ex != null) {
                         log.error("❌ Reviewer failed with exception", ex);
                         return ReviewResult.empty();
                     }
-                    return res;
+                    return reviewResult;
                 }))
                 .map(CompletableFuture::join)
                 .toList();
